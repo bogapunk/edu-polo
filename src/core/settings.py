@@ -41,12 +41,20 @@ else:
 
 # CSRF Settings
 if IS_PRODUCTION:
-    # En producción, usar los orígenes permitidos
-    CSRF_TRUSTED_ORIGINS = [f'https://{host}' for host in ALLOWED_HOSTS if host != '*']
-    CSRF_TRUSTED_ORIGINS.extend([f'http://{host}' for host in ALLOWED_HOSTS if host != '*'])
+    # En producción, construir CSRF_TRUSTED_ORIGINS
+    CSRF_TRUSTED_ORIGINS = []
+    # Agregar desde ALLOWED_HOSTS
+    for host in ALLOWED_HOSTS:
+        if host != '*':
+            CSRF_TRUSTED_ORIGINS.append(f'https://{host}')
+            CSRF_TRUSTED_ORIGINS.append(f'http://{host}')
     # Agregar orígenes desde variable de entorno si existe
     if os.environ.get('CSRF_TRUSTED_ORIGINS'):
-        CSRF_TRUSTED_ORIGINS.extend(os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(','))
+        env_origins = [origin.strip() for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',') if origin.strip()]
+        CSRF_TRUSTED_ORIGINS.extend(env_origins)
+    # Si no hay orígenes configurados, permitir todos (solo para desarrollo/testing)
+    if not CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS = ['*']
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
 else:

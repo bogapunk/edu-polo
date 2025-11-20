@@ -1,23 +1,47 @@
 #!/bin/bash
 set -e
 
+# Función para logging
+log() {
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1"
+}
+
 # Esperar a que la base de datos esté lista (si se usa PostgreSQL)
-if [ "$DATABASE" = "postgres" ]; then
-    echo "Esperando a PostgreSQL..."
-    while ! nc -z ${DB_HOST:-db} ${DB_PORT:-5432}; do
-        sleep 0.1
-    done
-    echo "PostgreSQL está listo"
+if [ "$DATABASE" = "postgres" ] || [ -n "$DATABASE_URL" ]; then
+    log "Esperando a PostgreSQL..."
+    # Extraer host y puerto de DATABASE_URL si está disponible
+    if [ -n "$DATABASE_URL" ]; then
+        DB_HOST=$(echo $DATABASE_URL | sed -n 's/.*@\([^:]*\):.*/\1/p')
+        DB_PORT=$(echo $DATABASE_URL | sed -n 's/.*:\([0-9]*\)\/.*/\1/p')
+    fi
+    if [ -n "$DB_HOST" ] && [ -n "$DB_PORT" ]; then
+        while ! nc -z ${DB_HOST} ${DB_PORT}; do
+            sleep 0.1
+        done
+        log "PostgreSQL está listo"
+    fi
 fi
 
 # Ejecutar migraciones
-echo "Ejecutando migraciones..."
-python manage.py migrate --noinput || true
+log "Ejecutando migraciones..."
+python manage.py migrate --noinput || {
+    log "ERROR: Fallo al ejecutar migraciones"
+    exit 1
+}
 
 # Recopilar archivos estáticos
-echo "Recopilando archivos estáticos..."
-python manage.py collectstatic --noinput || true
+log "Recopilando archivos estáticos..."
+python manage.py collectstatic --noinput || {
+    log "ADVERTENCIA: Fallo al recopilar archivos estáticos, continuando..."
+}
 
+# Verificar configuración
+log "Verificando configuración de Django..."
+python manage.py check --deploy || {
+    log "ADVERTENCIA: Hay problemas con la configuración de despliegue"
+}
+
+log "Iniciando aplicación..."
 # Ejecutar el comando proporcionado
 exec "$@"
 
