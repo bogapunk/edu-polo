@@ -327,7 +327,7 @@
         
         .info-item {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 0.8rem;
             color: #64748b;
             padding: 0.8rem;
@@ -340,6 +340,37 @@
         .info-item strong {
             color: #334155;
             font-weight: 600;
+        }
+        
+        .info-item-requisitos {
+            align-items: flex-start;
+            padding: 1.2rem;
+        }
+        
+        .info-item-requisitos > span {
+            font-size: 1.5rem;
+            margin-top: 0.2rem;
+        }
+        
+        .requisitos-content {
+            flex: 1;
+        }
+        
+        .requisitos-content strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #334155;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .requisitos-texto {
+            margin: 0;
+            color: #475569;
+            line-height: 1.6;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
         
         .comisiones {
@@ -769,9 +800,12 @@
                             </div>
                             {% endif %}
                             {% if curso.requisitos %}
-                            <div class="info-item">
+                            <div class="info-item info-item-requisitos">
                                 <span>📋</span>
-                                <span><strong>Requisitos:</strong> {{ curso.requisitos|truncatewords:10 }}</span>
+                                <div class="requisitos-content">
+                                    <strong>Requisitos:</strong>
+                                    <p class="requisitos-texto">{{ curso.requisitos }}</p>
+                                </div>
                             </div>
                             {% endif %}
                         </div>

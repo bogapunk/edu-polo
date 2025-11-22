@@ -609,6 +609,9 @@ def gestion_usuarios(request):
             # Verificar Administrador
             if UsuarioRol.objects.filter(usuario_id=usuario, rol_id__nombre='Administrador').exists():
                 roles_list.append('Administrador')
+            # Verificar Mesa de Entrada
+            if UsuarioRol.objects.filter(usuario_id=usuario, rol_id__nombre='Mesa de Entrada').exists():
+                roles_list.append('Mesa de Entrada')
         # Verificar Docente (usa id_persona directamente)
         if Docente.objects.filter(id_persona=persona).exists():
             roles_list.append('Docente')
@@ -838,6 +841,8 @@ def editar_usuario_admin(request, persona_id):
         roles_actuales.append('Docente')
     if UsuarioRol.objects.filter(usuario_id=usuario, rol_id__nombre='Administrador').exists():
         roles_actuales.append('Administrador')
+    if UsuarioRol.objects.filter(usuario_id=usuario, rol_id__nombre='Mesa de Entrada').exists():
+        roles_actuales.append('Mesa de Entrada')
     
     context = {
         'persona': persona,
